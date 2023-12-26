@@ -1,0 +1,6 @@
+breezy_components_ui.settings_form:
+  title: 'Breezy Components settings'
+  route_name: breezy_components_ui.settings_form
+  parent: system.admin_config_content
+  description: 'Manage Breezy Components settings'
+  weight: 0

@@ -1,0 +1,4 @@
+'breezy components admin settings':
+  title: 'Administer Breezy Components settings'
+  description: 'Allows configuring Breezy Components settings'
+  'restrict access': TRUE

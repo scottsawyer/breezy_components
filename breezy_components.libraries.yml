@@ -1,0 +1,9 @@
+drupal.breezy_components.behaviors_action_button:
+  css:
+    component:
+      css/breezy_components.behaviors-action-button.css: {}
+  js:
+    js/breezy_components.behaviors-action-button.js: {}
+  dependencies:
+    - core/drupal
+    - core/once

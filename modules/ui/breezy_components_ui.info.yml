@@ -1,0 +1,8 @@
+name: 'Breezy Components - UI'
+description: 'UI for managing Breezy Components'
+type: module
+package: 'Breezy'
+core_version_requirement: ^9 || ^10
+dependencies:
+  - breezy_components:breezy_components
+  - drupal:breakpoint

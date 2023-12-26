@@ -1,0 +1,11 @@
+{
+    "name": "drupal/breezy_components",
+    "type": "drupal-module",
+    "description": "Tailwind based components",
+    "homepage": "https://github.com/scottsawyer/breezy_components",
+    "license": "MIT",
+    "require": {
+        "drupal/paragraphs": "~1",
+        "drupal/core": "^9 || ^10",
+    }
+}

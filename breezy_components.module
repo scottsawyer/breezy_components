@@ -1,0 +1,149 @@
+<?php
+
+/**
+ * @file
+ * Contains functions for TopFloor Drupal Components.
+ */
+
+use Drupal\Core\Field\FieldDefinitionInterface;
+use Drupal\Core\Field\WidgetInterface;
+use Drupal\Component\Utility\Html;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Render\Element;
+use Drupal\paragraphs\Plugin\Field\FieldWidget\ParagraphsWidget;
+
+/**
+ * Implements hook_paragraphs_widget_actions_alter().
+ */
+function breezy_components_paragraphs_widget_actions_alter(&$widget_actions, $context) {
+  if (!isset($widget_actions['actions']['collapse_button'])) {
+    return;
+  }
+
+  $paragraph = $context['paragraphs_entity'];
+  if (empty($paragraph->getParagraphType()->getEnabledBehaviorPlugins())) {
+    return;
+  }
+
+  // Add a behaviors toggle button.
+  $title = t('Settings');
+  $widget_actions['actions']['behaviors_button'] = [
+    '#type' => 'button',
+    '#value' => $title,
+    '#name' => str_replace('_collapse', '_behaviors', $widget_actions['actions']['collapse_button']['#name']),
+    '#weight' => -100,
+    '#limit_validation_errors' => [],
+    '#delta' => $context['delta'],
+    '#access' => $widget_actions['actions']['collapse_button']['#access'],
+    '#attributes' => [
+      'class' => [
+        'paragraphs-icon-button', 'paragraphs-icon-button-behaviors', 'js-paragraphs-button-behaviors', 'button--extrasmall', 'button--small',
+      ],
+      'title' => $title,
+    ],
+  ];
+}
+
+/**
+ * Implements hook_field_widget_complete_form_alter().
+ */
+function breezy_components_field_widget_complete_form_alter(array &$field_widget_complete_form, FormStateInterface $form_state, array $context) {
+
+  /** @var \Drupal\paragraphs\Plugin\Field\FieldWidget\ParagraphsWidget $widget */
+  $widget = $context['widget'];
+  if (!($widget instanceof ParagraphsWidget)) {
+    return;
+  }
+
+  $wrapper_id = breezy_components_wrapper_id($context['form']['#parents'], $field_widget_complete_form['widget']['#field_name']);
+
+  // Move behavior plugin Settings button to the paragraph.
+  if ($widget->getThirdPartySetting('breezy_components', 'behaviors_action_button')) {
+    $field_widget_complete_form['widget']['add_more']['#attached']['library'][] = 'breezy_components/drupal.breezy_components.behaviors_action_button';
+    $field_widget_complete_form['widget']['add_more']['#attached']['drupalSettings']['breezy_components']['behaviors_action_button'][$wrapper_id] = ['wrapperId' => $wrapper_id];
+    if (!empty($field_widget_complete_form['widget']['#field_name'])) {
+      // Behaviors action button.
+      $field_widget_complete_form['#prefix'] = '<div class="is-horizontal paragraphs-tabs-wrapper" id="' . $wrapper_id . '">';
+      $field_widget_complete_form['#suffix'] = '</div>';
+      $elements = &$field_widget_complete_form['widget'];
+      foreach (Element::children($elements) as $key) {
+
+        if (isset($elements[$key]['behavior_plugins']) && Element::children($elements[$key]['behavior_plugins'])) {
+          $field_widget_complete_form['widget'][$key]['top']['actions']['behaviors_button'] = [
+            '#type' => 'button',
+            '#value' => t('Settings'),
+            '#weight' => -100,
+            '#limit_validation_errors' => [],
+            '#delta' => $field_widget_complete_form['widget'][$key]['#delta'],
+            '#access' => \Drupal::currentUser()->hasPermission('edit behavior plugin settings'),
+            '#attributes' => [
+              'class' => [
+                'js-paragraphs-button-behaviors',
+                'button--extrasmall',
+                'button--small',
+              ],
+              'title' => t('Settings'),
+            ],
+            '#title' => t('Settings'),
+          ];
+        }
+        else {
+          $field_widget_complete_form['widget'][$key]['top']['actions']['behaviors_button']['#access'] = FALSE;
+        }
+      }
+    }
+  }
+}
+
+
+/**
+ * Getting paragraphs widget wrapper ID.
+ *
+ * Logic is copied from paragraphs module.
+ *
+ * @param array $parents
+ *   List of parents for widget.
+ * @param string $field_name
+ *   Widget field name.
+ *
+ * @return string
+ *   Returns widget wrapper ID.
+ */
+function breezy_components_wrapper_id(array $parents, $field_name) {
+  return Html::getId(implode('-', array_merge($parents, [$field_name])) . '-add-more-wrapper');
+}
+
+/**
+ * Implements hook_field_widget_third_party_settings_form().
+ */
+function breezy_components_field_widget_third_party_settings_form(WidgetInterface $plugin, FieldDefinitionInterface $field_definition, $form_mode, $form, FormStateInterface $form_state) {
+  $elements = [];
+  if ($plugin instanceof ParagraphsWidget) {
+    $elements = breezy_components_get_third_party_form($plugin, $field_definition->getName());
+  }
+
+  return $elements;
+}
+
+/**
+ * Get 3rd party setting form.
+ *
+ * @param \Drupal\Core\Field\WidgetInterface $plugin
+ *   Widget plugin.
+ * @param string $field_name
+ *   Field name.
+ *
+ * @return array
+ *   Returns 3rd party form elements.
+ */
+function breezy_components_get_third_party_form(WidgetInterface $plugin, $field_name) {
+  $elements = [];
+
+  $elements['behaviors_action_button'] = [
+    '#type' => 'checkbox',
+    '#title' => t('Switch paragraphs content/behavior tabs to a behaviors action button'),
+    '#default_value' => $plugin->getThirdPartySetting('breezy_components', 'behaviors_action_button', FALSE),
+  ];
+
+  return $elements;
+}

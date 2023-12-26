@@ -1,0 +1,8 @@
+name: 'Breezy components'
+type: module
+description: 'Tailwind based Drupal components'
+package: 'Breezy'
+core_version_requirement: ^9 || ^10
+dependencies:
+  - paragraphs:paragraphs
+  - drupal:sdc

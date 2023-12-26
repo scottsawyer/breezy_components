@@ -1,0 +1,7 @@
+breezy_components_ui.settings_form:
+  path: '/admin/config/content/component-settings'
+  defaults:
+    _form: '\Drupal\breezy_components_ui\Form\BreezyComponentsSettingsForm'
+    _title: 'Components settings'
+  requirements:
+    _permission: 'breezy components admin settings'
